@@ -1,0 +1,27 @@
+import os
+import sys
+import easyio_config
+
+TARGETNAME = 'easy-io'
+TARGET = TARGETNAME + '.' + easyio_config.TARGET_EXT
+
+env = Environment(tools = ['mingw'],
+	AS = easyio_config.AS, ASFLAGS = easyio_config.AFLAGS,
+	CC = easyio_config.CC, CCFLAGS = easyio_config.CFLAGS,
+	AR = easyio_config.AR, ARFLAGS = '-rc',
+	LINK = easyio_config.LINK, LINKFLAGS = easyio_config.LFLAGS)
+env.PrependENVPath('PATH', easyio_config.EXEC_PATH)
+
+if easyio_config.PLATFORM == 'iar':
+	env.Replace(CCCOM = ['$CC $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -o $TARGET $SOURCES'])
+	env.Replace(ARFLAGS = [''])
+	env.Replace(LINKCOM = ['$LINK $SOURCES $LINKFLAGS -o $TARGET --map project.map'])
+
+#Export('easyio_config')
+
+objs = ['sms_echo.c']
+
+#objs = objs + SConscript('../EASY_IO_SDK/Libraries/SConscript', variant_dir='build/bsp/Libraries', duplicate=0)
+env.Program(TARGET, objs)
+env.AddPostAction(TARGET, easyio_config.POST_ACTION)
+
